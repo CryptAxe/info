@@ -2,7 +2,7 @@
 
 To understand how assume valid & checkpoints work in bitcoin there are a few variables to first learn about:
 
-* ```uint256 defaultAssumeValid```
+### ```uint256 defaultAssumeValid```
 
 https://github.com/bitcoin/bitcoin/blob/0.19/src/chainparams.cpp#L89-L90
 
@@ -13,8 +13,11 @@ consensus.defaultAssumeValid = uint256S("0x00000000000000000005f8920febd3925f827
 
 ```defaultAssumeValid``` is the hash of a block for which ancestors (all previous blocks connecting to this one) are assumed to be valid.
 
+<br />
+<br />
+<br />
 
-* ```uint256 nMinimumChainWork```
+### ```uint256 nMinimumChainWork```
 
 https://github.com/bitcoin/bitcoin/blob/0.19/src/chainparams.cpp#L86-L87
 
@@ -25,8 +28,12 @@ consensus.nMinimumChainWork = uint256S("0x00000000000000000000000000000000000000
 
 ```nMinimumChainWork``` is a 256 bit representation of the amount of work that the best chain should have at minimum. This is a way of represententing the sum of all work in the blocks up to a certain block height, which is updated frequently. The point of this is to prevent new nodes from downloading a chain that is valid but isn't actually the bitcoin chain with the most work. By setting and updating this number with the sum of work on the current chain, nodes can tell whether the chain they are about to download has at least the amount of work that is expected. 
 
+<br />
+<br />
+<br />
 
-* ```std::map<int, uint256> MapCheckpoints```
+
+### ```std::map<int, uint256> MapCheckpoints```
 
 https://github.com/bitcoin/bitcoin/blob/0.19/src/chainparams.cpp#L139-L155
 
