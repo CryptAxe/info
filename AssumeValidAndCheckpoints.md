@@ -105,3 +105,38 @@ if (!hashAssumeValid.IsNull()) {
 
 ```
 
+<br />
+
+Take a moment to read the comments in the code above. You should have a basic understanding of what is going on here based on the comments. In summary, if a block is an ancestor of the block with the hash matching ```defaultAssumeValid``` and the block is part of a chain with at least ```nMinimumChainWork``` the scripts in the block will not be verified. As of Bitcoin Core version 0.19 this means that blocks prior to 597379 will not have the scripts in the block verified.
+
+<br />
+
+In more detail, ```bool fScriptChecks``` is set to true. Then the software checks if there is a hashAssumeValid set. If set, the software checks whether the block is an ancestor (came before) the block with the hash matching ```hashAssumeValid``` and whether the block is part of a chain with at least ```nMinimumChainWork```. If all of that is true, the software then uses the function ```GetBlockProofEquivalentTime``` which calculates the amount of time it would take to redo the work of the block we are deciding whether to check the scripts of all the way to the chain tip, with the current estimated amount of network hashrate. 
+
+https://github.com/bitcoin/bitcoin/blob/0.19/src/chain.cpp#L137-L152
+
+```
+int64_t GetBlockProofEquivalentTime(const CBlockIndex& to, const CBlockIndex& from, const CBlockIndex& tip, const Consensus::Params& params)
+{
+    arith_uint256 r;
+    int sign = 1;
+    if (to.nChainWork > from.nChainWork) {
+        r = to.nChainWork - from.nChainWork;
+    } else {
+        r = from.nChainWork - to.nChainWork;
+        sign = -1;
+    }
+    r = r * arith_uint256(params.nPowTargetSpacing) / GetBlockProof(tip);
+    if (r.bits() > 63) {
+        return sign * std::numeric_limits<int64_t>::max();
+    }
+    return sign * r.GetLow64();
+}
+```
+
+If all of the checks mentioned before are true, and the block proof equivalent time is greater than 60 * 60 * 24 * 7 * 2 (two weeks in seconds) then ```fScriptChecks``` will be set to false. When ```fScriptChecks``` is set to false, the scripts from the block will not be added to the validation queue for verification. 
+
+https://github.com/bitcoin/bitcoin/blob/0.19/src/validation.cpp#L2085
+
+```CCheckQueueControl<CScriptCheck> control(fScriptChecks && nScriptCheckThreads ? &scriptcheckqueue : nullptr);```
+
